@@ -109,15 +109,46 @@
   </div>
 
   <div class="card">
-    <label>Indsæt menumail her</label>
+    <label>Menumail</label>
+    <button id="fetchBtn" onclick="fetchFromFeed()" style="background:#c8a96e;margin-bottom:0.75rem;width:100%;padding:0.75rem;border:none;border-radius:8px;font-family:inherit;font-size:0.9rem;font-weight:500;cursor:pointer;color:white;">&#8595; Hent seneste email fra feed</button>
     <textarea id="emailText" placeholder="Kære alle sammen...&#10;&#10;Menu for uge XX-XXXX&#10;..."></textarea>
-    <button id="parseBtn" onclick="parseAndPublish()">Parse & Publicer menu</button>
+    <button id="parseBtn" onclick="parseAndPublish()">Parse &amp; Publicer menu</button>
     <div class="status" id="status"></div>
     <div class="preview" id="preview"></div>
   </div>
 </div>
 
 <script>
+  const RSS_URL = 'https://kill-the-newsletter.com/feeds/wh1q510277r6m7om09fw.xml';
+
+  async function fetchFromFeed() {
+    const btn = document.getElementById('fetchBtn');
+    btn.textContent = 'Henter...';
+    btn.disabled = true;
+    try {
+      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(RSS_URL)}`);
+      const data = await r.json();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(data.contents, 'text/xml');
+      const entries = xml.querySelectorAll('entry');
+      if (!entries.length) throw new Error('Ingen entries i feed');
+      // Get latest entry
+      const latest = entries[0];
+      const content = latest.querySelector('content') || latest.querySelector('summary');
+      let text = content ? content.textContent : '';
+      // Strip HTML tags if present
+      const tmp = document.createElement('div');
+      tmp.innerHTML = text;
+      text = tmp.innerText || tmp.textContent;
+      document.getElementById('emailText').value = text.trim();
+      setStatus('✓ Email hentet fra feed', 'ok');
+    } catch(e) {
+      setStatus('Feed fejl: ' + e.message, 'err');
+    }
+    btn.textContent = '↓ Hent seneste email fra feed';
+    btn.disabled = false;
+  }
+
   // Restore saved values
   ['gistId','githubToken','anthropicKey'].forEach(k => {
     const el = document.getElementById(k);
