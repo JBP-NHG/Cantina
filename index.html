@@ -4,195 +4,356 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kantinen</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
 <style>
+  /* NHG Tokens (subset — no local fonts needed, using Google Fonts) */
   :root {
-    --cream: #faf7f2;
-    --ink: #1a1814;
-    --warm: #c8a96e;
-    --muted: #8a8278;
-    --card: #ffffff;
-    --border: #e8e2d9;
+    --nhg-dark-blue:    #1f1f6b;
+    --nhg-mid-blue:     #394bac;
+    --nhg-dark-green:   #065f1f;
+    --nhg-mid-green:    #4eae06;
+    --nhg-stone:        #ded9c7;
+    --nhg-grey-cool:    #f2f4f7;
+    --nhg-white:        #ffffff;
+
+    --bg:               #fbfaf6;
+    --bg-raised:        #ffffff;
+    --bg-stone:         #f4f1e8;
+    --bg-ink:           var(--nhg-dark-blue);
+    --bg-ink-deep:      #15154d;
+
+    --text-strong:      var(--nhg-dark-blue);
+    --text-body:        #2a2a4a;
+    --text-muted:       #5e5e7a;
+    --text-soft:        #8a8aa3;
+    --text-on-ink:      #ffffff;
+    --text-on-ink-soft: rgba(255,255,255,0.72);
+
+    --line:             rgba(31,31,107,0.10);
+    --line-strong:      rgba(31,31,107,0.18);
+    --line-on-ink:      rgba(255,255,255,0.16);
+
+    --accent:           var(--nhg-dark-blue);
+    --accent-2:         var(--nhg-mid-green);
+    --accent-soft:      #e8f3dc;
+    --accent-blue-soft: #e6e9f5;
+
+    --font-sans: 'Urbanist', system-ui, sans-serif;
+    --font-serif: 'Lora', Georgia, serif;
+
+    --fs-h1:    clamp(36px, 4.4vw, 60px);
+    --fs-h2:    clamp(28px, 3vw, 42px);
+    --fs-h3:    clamp(22px, 2vw, 28px);
+    --fs-h4:    18px;
+    --fs-body-lg: 18px;
+    --fs-body:  16px;
+    --fs-small: 14px;
+    --fs-eyebrow: 12px;
+
+    --lh-tight: 1.05;
+    --lh-snug:  1.18;
+    --lh-body:  1.55;
+
+    --tracking-eyebrow: 0.16em;
+
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 24px;
+    --r-xl: 36px;
+    --r-pill: 999px;
+
+    --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+    --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 48px;
+    --s-10: 64px; --s-11: 80px; --s-12: 112px;
+
+    --shadow-sm: 0 2px 8px rgba(31,31,107,0.06), 0 1px 2px rgba(31,31,107,0.04);
+    --shadow-md: 0 12px 32px rgba(31,31,107,0.08), 0 2px 6px rgba(31,31,107,0.04);
+    --shadow-lg: 0 28px 60px rgba(31,31,107,0.14), 0 8px 18px rgba(31,31,107,0.06);
+
+    --ease: cubic-bezier(.2,.7,.2,1);
+    --dur-2: 220ms;
+    --dur-3: 380ms;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
 
   body {
-    background: var(--cream);
-    color: var(--ink);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    padding: 2rem 1rem 4rem;
+    font-family: var(--font-sans);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--text-body);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
   }
 
+  /* ── Header ── */
   header {
+    background: var(--bg-ink);
+    padding: var(--s-9) var(--s-7);
     text-align: center;
-    padding: 3rem 0 2rem;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 15% 50%, rgba(57,75,172,0.35) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 85% 30%, rgba(3,176,158,0.15) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .header-inner { position: relative; z-index: 1; }
+
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--fs-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-on-ink-soft);
+    margin-bottom: var(--s-3);
   }
 
   header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2.5rem, 6vw, 4rem);
-    letter-spacing: -0.02em;
-    color: var(--ink);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--fs-h1);
+    line-height: var(--lh-tight);
+    letter-spacing: -0.018em;
+    color: var(--text-on-ink);
+    margin: 0 0 var(--s-3);
   }
 
-  header .date {
-    margin-top: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
+  header h1 em {
+    font-style: italic;
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  .header-date {
+    font-size: var(--fs-small);
+    color: var(--text-on-ink-soft);
+    font-weight: 400;
+  }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--s-10) var(--s-7) var(--s-12);
+  }
+
+  /* ── Today card ── */
+  .today-label {
+    font-size: var(--fs-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .today-section {
-    max-width: 640px;
-    margin: 0 auto 4rem;
-  }
-
-  .section-label {
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--warm);
-    margin-bottom: 1rem;
+    color: var(--accent-2);
+    margin-bottom: var(--s-4);
   }
 
   .today-card {
-    background: var(--ink);
-    color: var(--cream);
-    border-radius: 16px;
-    padding: 2.5rem 2rem;
+    background: var(--bg-ink);
+    border-radius: var(--r-xl);
+    padding: var(--s-9) var(--s-8);
+    margin-bottom: var(--s-10);
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-lg);
   }
 
   .today-card::before {
     content: '';
     position: absolute;
-    top: -40px; right: -40px;
-    width: 180px; height: 180px;
-    border-radius: 50%;
-    background: rgba(200, 169, 110, 0.12);
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 90% at 90% 10%, rgba(78,174,6,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 10% 90%, rgba(57,75,172,0.25) 0%, transparent 65%);
+    pointer-events: none;
   }
+
+  .today-card-inner { position: relative; z-index: 1; }
 
   .today-day {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    color: var(--warm);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--fs-h2);
+    line-height: var(--lh-snug);
+    letter-spacing: -0.012em;
+    color: var(--text-on-ink);
+    margin-bottom: var(--s-7);
   }
 
-  .meal {
-    margin-bottom: 1.2rem;
-  }
+  .meal-block { margin-bottom: var(--s-6); }
+  .meal-block:last-child { margin-bottom: 0; }
 
   .meal-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.18em;
+    font-size: var(--fs-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
-    color: rgba(250,247,242,0.45);
-    margin-bottom: 0.3rem;
+    color: var(--text-on-ink-soft);
+    margin-bottom: var(--s-2);
   }
 
   .meal-text {
-    font-size: 1.1rem;
-    font-weight: 300;
-    line-height: 1.5;
-    color: var(--cream);
+    font-size: var(--fs-body-lg);
+    font-weight: 400;
+    line-height: var(--lh-body);
+    color: var(--text-on-ink);
   }
 
-  .divider {
+  .meal-divider {
     border: none;
-    border-top: 1px solid rgba(250,247,242,0.15);
-    margin: 1.2rem 0;
+    border-top: 1px solid var(--line-on-ink);
+    margin: var(--s-6) 0;
   }
 
-  .week-section {
-    max-width: 640px;
-    margin: 0 auto;
+  /* ── Week section ── */
+  .week-label {
+    font-size: var(--fs-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: var(--s-5);
   }
 
-  .week-grid {
+  .week-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--s-3);
   }
 
-  .day-row {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
+  .day-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: var(--s-6) var(--s-7);
     display: grid;
-    grid-template-columns: 90px 1fr;
-    gap: 1rem;
-    align-items: start;
-    transition: border-color 0.2s;
+    grid-template-columns: 110px 1fr;
+    gap: var(--s-6);
+    align-items: center;
+    transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+    box-shadow: var(--shadow-sm);
   }
 
-  .day-row:hover { border-color: var(--warm); }
+  .day-card:hover {
+    border-color: var(--nhg-dark-blue);
+    box-shadow: var(--shadow-md);
+  }
 
   .day-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.95rem;
-    color: var(--muted);
-    padding-top: 2px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--fs-h4);
+    color: var(--text-strong);
   }
 
-  .day-meals { font-size: 0.88rem; line-height: 1.6; color: var(--ink); }
-  .day-meals span { color: var(--muted); font-size: 0.78rem; }
+  .day-meals {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .day-meals-separator {
+    display: inline-block;
+    margin: 0 6px;
+    color: var(--line-strong);
+  }
+
+  /* ── States ── */
+  .weekend-msg {
+    background: var(--bg-stone);
+    border-radius: var(--r-xl);
+    padding: var(--s-10) var(--s-8);
+    text-align: center;
+    margin-bottom: var(--s-10);
+  }
+
+  .weekend-msg h2 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--fs-h2);
+    color: var(--text-strong);
+    margin: 0 0 var(--s-3);
+  }
+
+  .weekend-msg p {
+    color: var(--text-muted);
+    margin: 0;
+    font-style: italic;
+    font-family: var(--font-serif);
+  }
 
   .no-menu {
     text-align: center;
-    padding: 4rem 2rem;
-    color: var(--muted);
-    font-size: 0.95rem;
+    padding: var(--s-10);
+    color: var(--text-muted);
+    font-size: var(--fs-body-lg);
+    font-family: var(--font-serif);
+    font-style: italic;
   }
 
-  .weekend-msg {
+  /* ── Footer ── */
+  footer {
     text-align: center;
-    padding: 3rem 2rem;
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    color: var(--muted);
+    padding: var(--s-8) var(--s-7);
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 560px) {
+    main { padding: var(--s-8) var(--s-5) var(--s-11); }
+    .today-card { padding: var(--s-7) var(--s-6); border-radius: var(--r-lg); }
+    .day-card { grid-template-columns: 1fr; gap: var(--s-2); }
+    .day-name { font-size: var(--fs-body); }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Kantinen</h1>
-  <div class="date" id="headerDate"></div>
+  <div class="header-inner">
+    <div class="eyebrow">Nordic Health Group</div>
+    <h1>Kantinen <em>i dag</em></h1>
+    <div class="header-date" id="headerDate"></div>
+  </div>
 </header>
 
-<div class="today-section">
-  <div class="section-label">I dag</div>
+<main>
+  <div class="today-label" id="todayLabel"></div>
   <div id="todayCard"></div>
-</div>
 
-<div class="week-section">
-  <div class="section-label">Resten af ugen</div>
-  <div class="week-grid" id="weekGrid"></div>
-</div>
+  <div class="week-label">Resten af ugen</div>
+  <div class="week-list" id="weekList"></div>
+</main>
+
+<footer>Nordic Health Group &mdash; Kantinen</footer>
 
 <script>
-  const GIST_ID = '281366dbec59add933ff042a9ebef891';
+  const GIST_ID  = '281366dbec59add933ff042a9ebef891';
   const GIST_FILE = 'menu.json';
 
-  const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const DAYS_EN = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
   const DAYS_DA = { monday:'Mandag', tuesday:'Tirsdag', wednesday:'Onsdag', thursday:'Torsdag', friday:'Fredag' };
-  const DAYS_DA_FULL = { monday:'Mandag', tuesday:'Tirsdag', wednesday:'Onsdag', thursday:'Torsdag', friday:'Fredag', saturday:'Lørdag', sunday:'Søndag' };
 
-  const today = new Date();
-  const todayKey = DAYS[today.getDay()];
+  const today   = new Date();
+  const todayKey = DAYS_EN[today.getDay()];
+  const isWeekend = todayKey === 'saturday' || todayKey === 'sunday';
 
   document.getElementById('headerDate').textContent =
-    today.toLocaleDateString('da-DK', { weekday:'long', day:'numeric', month:'long' });
+    today.toLocaleDateString('da-DK', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
   async function loadMenu() {
     let menu;
@@ -201,39 +362,66 @@
       const data = await r.json();
       menu = JSON.parse(data.files[GIST_FILE].content);
     } catch(e) {
-      document.getElementById('todayCard').innerHTML = '<div class="no-menu">Kunne ikke hente menuen. Prøv igen senere.</div>';
+      document.getElementById('todayCard').innerHTML =
+        '<div class="no-menu">Menuen kunne ikke hentes. Prøv igen senere.</div>';
       return;
     }
 
-    // Today card
-    const todayEl = document.getElementById('todayCard');
-    if (todayKey === 'saturday' || todayKey === 'sunday') {
-      todayEl.innerHTML = '<div class="weekend-msg">God weekend! 🌿</div>';
+    const todayEl  = document.getElementById('todayCard');
+    const labelEl  = document.getElementById('todayLabel');
+
+    if (isWeekend) {
+      labelEl.style.display = 'none';
+      todayEl.innerHTML = `
+        <div class="weekend-msg">
+          <h2>God weekend! 🌿</h2>
+          <p>Kantinen er lukket lørdag og søndag.</p>
+        </div>`;
     } else if (menu[todayKey]) {
       const d = menu[todayKey];
+      labelEl.textContent = DAYS_DA[todayKey];
       todayEl.innerHTML = `
         <div class="today-card">
-          <div class="today-day">${DAYS_DA_FULL[todayKey]}</div>
-          ${d.starter ? `<div class="meal"><div class="meal-label">Forret / salat</div><div class="meal-text">${d.starter}</div></div><hr class="divider">` : ''}
-          ${d.main ? `<div class="meal"><div class="meal-label">Hovedret</div><div class="meal-text">${d.main}</div></div>` : ''}
-          ${d.dessert ? `<hr class="divider"><div class="meal"><div class="meal-label">Dessert</div><div class="meal-text">${d.dessert}</div></div>` : ''}
+          <div class="today-card-inner">
+            ${d.starter ? `
+              <div class="meal-block">
+                <div class="meal-label">Forret / Salat</div>
+                <div class="meal-text">${d.starter}</div>
+              </div>
+              <hr class="meal-divider">` : ''}
+            ${d.main ? `
+              <div class="meal-block">
+                <div class="meal-label">Hovedret</div>
+                <div class="meal-text">${d.main}</div>
+              </div>` : ''}
+            ${d.dessert ? `
+              <hr class="meal-divider">
+              <div class="meal-block">
+                <div class="meal-label">Dessert</div>
+                <div class="meal-text">${d.dessert}</div>
+              </div>` : ''}
+          </div>
         </div>`;
     } else {
+      labelEl.style.display = 'none';
       todayEl.innerHTML = '<div class="no-menu">Ingen menu registreret for i dag.</div>';
     }
 
     // Rest of week
-    const weekEl = document.getElementById('weekGrid');
     const order = ['monday','tuesday','wednesday','thursday','friday'];
-    const rest = order.filter(d => d !== todayKey);
+    const rest  = order.filter(d => d !== todayKey);
+    const weekEl = document.getElementById('weekList');
+
     weekEl.innerHTML = rest.map(day => {
       const d = menu[day];
       if (!d) return '';
-      const parts = [d.starter, d.main, d.dessert].filter(Boolean).join(' · ');
-      return `<div class="day-row">
-        <div class="day-name">${DAYS_DA[day]}</div>
-        <div class="day-meals">${parts || '<span>Ingen data</span>'}</div>
-      </div>`;
+      const parts = [d.starter, d.main].filter(Boolean);
+      const text  = parts.join('<span class="day-meals-separator">·</span>') || '<em>Ingen data</em>';
+      return `
+        <div class="day-card">
+          <div class="day-name">${DAYS_DA[day]}</div>
+          <div class="day-meals">${text}</div>
+        </div>`;
     }).join('');
   }
 
