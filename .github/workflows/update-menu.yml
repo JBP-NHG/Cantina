@@ -16,12 +16,13 @@ jobs:
           GIST_ID: 281366dbec59add933ff042a9ebef891
           RSS_URL: https://kill-the-newsletter.com/feeds/wh1q510277r6m7om09fw.xml
         run: |
-          python3 << 'EOF'
-          import urllib.request, json, os, re
+          python3 - << 'EOF'
+          import urllib.request, json, os
           from xml.etree import ElementTree as ET
           from html.parser import HTMLParser
 
-          # --- Strip HTML tags ---
+          NS = '{http://www.w3.org/2005/Atom}'
+
           class MLStripper(HTMLParser):
               def __init__(self):
                   super().__init__()
@@ -36,42 +37,38 @@ jobs:
               s.feed(html)
               return s.get_data()
 
-          # --- Fetch RSS ---
+          # Fetch RSS
           print("Fetching RSS feed...")
           with urllib.request.urlopen(os.environ['RSS_URL']) as r:
               xml_data = r.read()
 
           root = ET.fromstring(xml_data)
-          ns = {'atom': 'http://www.w3.org/2005/Atom'}
-          entries = root.findall('atom:entry', ns)
+          entries = list(root.iter(f'{NS}entry'))
           if not entries:
               raise Exception("No entries in RSS feed")
 
           latest = entries[0]
-          content_el = latest.find('atom:content', ns) or latest.find('atom:summary', ns)
+          content_el = latest.find(f'{NS}content')
+          if content_el is None:
+              content_el = latest.find(f'{NS}summary')
+
           raw = content_el.text if content_el is not None else ''
           email_text = strip_html(raw).strip()
           print(f"Got email ({len(email_text)} chars)")
 
-          # --- Parse with Claude ---
+          # Parse with Claude
           print("Parsing with Claude...")
           prompt = f"""Extract the weekly canteen menu from this Danish email. Return ONLY valid JSON, no explanation, no markdown fences.
 
           JSON format:
-          {{
-            "monday": {{ "starter": "...", "main": "...", "dessert": null }},
-            "tuesday": {{ "starter": "...", "main": "...", "dessert": null }},
-            "wednesday": {{ "starter": "...", "main": "...", "dessert": null }},
-            "thursday": {{ "starter": "...", "main": "...", "dessert": null }},
-            "friday": {{ "starter": "...", "main": "...", "dessert": null }}
-          }}
+          {{"monday": {{"starter": "...", "main": "...", "dessert": null}}, "tuesday": {{"starter": "...", "main": "...", "dessert": null}}, "wednesday": {{"starter": "...", "main": "...", "dessert": null}}, "thursday": {{"starter": "...", "main": "...", "dessert": null}}, "friday": {{"starter": "...", "main": "...", "dessert": null}}}}
 
           Rules:
           - Use null for missing fields
-          - "starter" can be salad, soup, cold starter etc.
-          - "***" separates starter from main
+          - starter can be salad, soup, cold starter etc.
+          - *** separates starter from main
           - Preserve original Danish text
-          - If friday is "Koldt bord" put it in "main"
+          - If friday is Koldt bord put it in main
 
           Email:
           {email_text}"""
@@ -96,9 +93,9 @@ jobs:
 
           text = data['content'][0]['text'].replace('```json','').replace('```','').strip()
           menu = json.loads(text)
-          print(f"Parsed menu: {list(menu.keys())}")
+          print(f"Parsed: {list(menu.keys())}")
 
-          # --- Push to Gist ---
+          # Push to Gist
           print("Pushing to Gist...")
           payload = json.dumps({
               "files": {"menu.json": {"content": json.dumps(menu, indent=2, ensure_ascii=False)}}
@@ -114,6 +111,5 @@ jobs:
           )
           with urllib.request.urlopen(req) as r:
               result = json.loads(r.read())
-              print(f"✓ Gist updated: {result['id']}")
-
+              print(f"Done: {result['id']}")
           EOF
