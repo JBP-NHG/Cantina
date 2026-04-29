@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kantinen</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf7f2;
+    --ink: #1a1814;
+    --warm: #c8a96e;
+    --muted: #8a8278;
+    --card: #ffffff;
+    --border: #e8e2d9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  header {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  header .date {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .today-section {
+    max-width: 640px;
+    margin: 0 auto 4rem;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--warm);
+    margin-bottom: 1rem;
+  }
+
+  .today-card {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .today-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(200, 169, 110, 0.12);
+  }
+
+  .today-day {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: var(--warm);
+  }
+
+  .meal {
+    margin-bottom: 1.2rem;
+  }
+
+  .meal-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(250,247,242,0.45);
+    margin-bottom: 0.3rem;
+  }
+
+  .meal-text {
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--cream);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid rgba(250,247,242,0.15);
+    margin: 1.2rem 0;
+  }
+
+  .week-section {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .week-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .day-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 1rem;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+
+  .day-row:hover { border-color: var(--warm); }
+
+  .day-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    padding-top: 2px;
+  }
+
+  .day-meals { font-size: 0.88rem; line-height: 1.6; color: var(--ink); }
+  .day-meals span { color: var(--muted); font-size: 0.78rem; }
+
+  .no-menu {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .weekend-msg {
+    text-align: center;
+    padding: 3rem 2rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kantinen</h1>
+  <div class="date" id="headerDate"></div>
+</header>
+
+<div class="today-section">
+  <div class="section-label">I dag</div>
+  <div id="todayCard"></div>
+</div>
+
+<div class="week-section">
+  <div class="section-label">Resten af ugen</div>
+  <div class="week-grid" id="weekGrid"></div>
+</div>
+
+<script>
+  const GIST_ID = 'REPLACE_WITH_GIST_ID';
+  const GIST_FILE = 'menu.json';
+
+  const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const DAYS_DA = { monday:'Mandag', tuesday:'Tirsdag', wednesday:'Onsdag', thursday:'Torsdag', friday:'Fredag' };
+  const DAYS_DA_FULL = { monday:'Mandag', tuesday:'Tirsdag', wednesday:'Onsdag', thursday:'Torsdag', friday:'Fredag', saturday:'Lørdag', sunday:'Søndag' };
+
+  const today = new Date();
+  const todayKey = DAYS[today.getDay()];
+
+  document.getElementById('headerDate').textContent =
+    today.toLocaleDateString('da-DK', { weekday:'long', day:'numeric', month:'long' });
+
+  async function loadMenu() {
+    let menu;
+    try {
+      const r = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+      const data = await r.json();
+      menu = JSON.parse(data.files[GIST_FILE].content);
+    } catch(e) {
+      document.getElementById('todayCard').innerHTML = '<div class="no-menu">Kunne ikke hente menuen. Prøv igen senere.</div>';
+      return;
+    }
+
+    // Today card
+    const todayEl = document.getElementById('todayCard');
+    if (todayKey === 'saturday' || todayKey === 'sunday') {
+      todayEl.innerHTML = '<div class="weekend-msg">God weekend! 🌿</div>';
+    } else if (menu[todayKey]) {
+      const d = menu[todayKey];
+      todayEl.innerHTML = `
+        <div class="today-card">
+          <div class="today-day">${DAYS_DA_FULL[todayKey]}</div>
+          ${d.starter ? `<div class="meal"><div class="meal-label">Forret / salat</div><div class="meal-text">${d.starter}</div></div><hr class="divider">` : ''}
+          ${d.main ? `<div class="meal"><div class="meal-label">Hovedret</div><div class="meal-text">${d.main}</div></div>` : ''}
+          ${d.dessert ? `<hr class="divider"><div class="meal"><div class="meal-label">Dessert</div><div class="meal-text">${d.dessert}</div></div>` : ''}
+        </div>`;
+    } else {
+      todayEl.innerHTML = '<div class="no-menu">Ingen menu registreret for i dag.</div>';
+    }
+
+    // Rest of week
+    const weekEl = document.getElementById('weekGrid');
+    const order = ['monday','tuesday','wednesday','thursday','friday'];
+    const rest = order.filter(d => d !== todayKey);
+    weekEl.innerHTML = rest.map(day => {
+      const d = menu[day];
+      if (!d) return '';
+      const parts = [d.starter, d.main, d.dessert].filter(Boolean).join(' · ');
+      return `<div class="day-row">
+        <div class="day-name">${DAYS_DA[day]}</div>
+        <div class="day-meals">${parts || '<span>Ingen data</span>'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  loadMenu();
+</script>
+</body>
+</html>
